@@ -34,7 +34,8 @@ class Payment(models.Model):
     pay_type = models.CharField(
         max_length=15,
         choices=PayChoices.choices,
-        default=PayChoices.ETC,
+        default=PayChoices.FOOD,
+        blank=False,
     )
 
     # 지출 제목
