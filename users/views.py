@@ -144,9 +144,15 @@ class MyPageView(APIView):
         )
 
         if serializer.is_valid():
-            updated_info = serializer.save()
+            serializer.save()
             return Response(
-                MyPageSerializer(updated_info).data, status=status.HTTP_200_OK
+                {
+                    "user_pk": user.pk,
+                    "username": user.username,
+                    "name": user.name,
+                    "message": "회원정보가 수정되었습니다.",
+                },
+                status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -42,6 +42,7 @@ class MyPageSerializer(serializers.ModelSerializer):
             "pk",
             "username",
             "date_joined",
+            "last_login",
         )
         exclude = (
             "is_superuser",
