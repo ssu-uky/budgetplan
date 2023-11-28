@@ -17,12 +17,12 @@ class MonthlyPlan(models.Model):
         blank=False,
     )
 
-    # 한달 수입 (monthly_income = monthly_plan + monthly_saving)
+    # 한달 수입 (monthly_income = monthly_possible + monthly_saving)
     monthly_income = models.PositiveIntegerField(
         blank=False,
     )
 
-    # 한달 저축 금액 (monthly_saving = monthly_income - monthly_plan)
+    # 한달 저축 금액 (monthly_saving = monthly_income - monthly_possible)
     monthly_saving = models.PositiveIntegerField(
         blank=False,
     )
@@ -39,7 +39,7 @@ class MonthlyPlan(models.Model):
         default=0,
     )
 
-    # 한달 지출 가능 금액 (monthly_plan = monthly_income - monthly_saving)
+    # 한달 지출 가능 금액 (monthly_possible = monthly_income - monthly_saving)
     monthly_possible = models.PositiveIntegerField(
         blank=False,
     )
