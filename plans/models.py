@@ -12,7 +12,7 @@ class MonthlyPlan(models.Model):
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="plans",
+        related_name="monthly_plans",
         verbose_name="사용자",
         blank=False,
     )
@@ -30,7 +30,7 @@ class MonthlyPlan(models.Model):
     # 한달 지출 목록
     monthly_spending = models.ManyToManyField(
         Payment,
-        related_name="monthly_plans",
+        related_name="monthly_spending",
         blank=True,
     )
 
@@ -48,7 +48,7 @@ class MonthlyPlan(models.Model):
         return f"{self.owner.name}님, 이번 달 사용 가능 금액은 {self.monthly_possible}원 입니다."
 
 
-class DailyPlan(models.Model):
+class TodayPlan(models.Model):
     """
     하루 예산 계획 모델
     """
@@ -56,7 +56,7 @@ class DailyPlan(models.Model):
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="plans",
+        related_name="today_plans",
         verbose_name="사용자",
         blank=False,
     )
@@ -64,7 +64,7 @@ class DailyPlan(models.Model):
     # 하루 지출 목록
     today_spending = models.ManyToManyField(
         Payment,
-        related_name="today_plans",
+        related_name="today_spending",
         blank=True,
     )
 
