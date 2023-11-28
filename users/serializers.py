@@ -41,7 +41,6 @@ class MyPageSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "pk",
             "username",
-            "name",
             "date_joined",
         )
         exclude = (
