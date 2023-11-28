@@ -4,9 +4,9 @@ from users.models import User
 from payments.models import Payment
 
 
-class Plan(models.Model):
+class MonthlyPlan(models.Model):
     """
-    예산 계획 모델
+    한 달 예산 계획 모델
     """
 
     owner = models.ForeignKey(
@@ -27,11 +27,6 @@ class Plan(models.Model):
         blank=False,
     )
 
-    # 한달 지출 가능 금액 (monthly_plan = monthly_income - monthly_saving)
-    monthly_possible = models.PositiveIntegerField(
-        blank=False,
-    )
-
     # 한달 지출 목록
     monthly_spending = models.ManyToManyField(
         Payment,
@@ -42,6 +37,28 @@ class Plan(models.Model):
     # 한달 총 지출 금액
     monthly_total_spending = models.PositiveIntegerField(
         default=0,
+    )
+
+    # 한달 지출 가능 금액 (monthly_plan = monthly_income - monthly_saving)
+    monthly_possible = models.PositiveIntegerField(
+        blank=False,
+    )
+
+    def __str__(self):
+        return f"{self.owner.name}님, 이번 달 사용 가능 금액은 {self.monthly_possible}원 입니다."
+
+
+class DailyPlan(models.Model):
+    """
+    하루 예산 계획 모델
+    """
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="plans",
+        verbose_name="사용자",
+        blank=False,
     )
 
     # 하루 지출 목록
