@@ -111,4 +111,8 @@ class MonthlyPlanDetailView(APIView):
     def delete(self, request, owner):
         monthly_plan = self.get_object(request, owner)
         monthly_plan.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        return Response(
+            {"message": "예산 계획이 삭제되었습니다."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
