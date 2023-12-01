@@ -1,3 +1,4 @@
+import calendar
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
@@ -8,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.exceptions import NotFound, PermissionDenied, ParseError
 
 from .models import MonthlyPlan, TodayPlan
-from .serializers import MonthlyPlanSerializer
+from .serializers import MonthlyPlanSerializer, TodayPlanSerializer
 
 from payments.models import Payment
 from users.models import User
@@ -111,8 +112,34 @@ class MonthlyPlanDetailView(APIView):
     def delete(self, request, owner):
         monthly_plan = self.get_object(request, owner)
         monthly_plan.delete()
-        
+
         return Response(
             {"message": "예산 계획이 삭제되었습니다."},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class TodayPlanView(APIView):
+    """
+    GET : 오늘 사용 내역 조회
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, owner):
+        user = get_object_or_404(User, username=owner)
+
+        if user != request.user:
+            raise PermissionDenied("본인만 접근 가능합니다.")
+
+        today = timezone.localtime().date()
+        today_plan = TodayPlan.objects.filter(owner=user, date=today).first()
+        if today_plan is None:
+            return Response(
+                {"message": "오늘 사용 내역이 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = TodayPlanSerializer(today_plan)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    

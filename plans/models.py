@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from users.models import User
 from payments.models import Payment
@@ -78,5 +79,9 @@ class TodayPlan(models.Model):
         default=0,
     )
 
+    date = models.DateField(
+        default=timezone.localtime().date(),
+    )
+    
     def __str__(self):
         return f"{self.owner.name}님, 오늘의 예산 계획은 {self.today_possible}원 입니다."
