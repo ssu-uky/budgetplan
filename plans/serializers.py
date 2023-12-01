@@ -5,6 +5,8 @@ from datetime import date
 
 from .models import MonthlyPlan, TodayPlan
 
+from payments.models import Payment
+# from payments.serializers import PaymentSerializer
 
 class MonthlyPlanSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.name")
@@ -51,8 +53,9 @@ class MonthlyPlanSerializer(serializers.ModelSerializer):
 
 class TodayPlanSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.name")
-    date = serializers.SerializerMethodField()
+    date = serializers.DateField()
     today_possible = serializers.SerializerMethodField()
+    # today_spending = PaymentSerializer(many=True, read_only=True)
 
     class Meta:
         model = TodayPlan
@@ -66,3 +69,20 @@ class TodayPlanSerializer(serializers.ModelSerializer):
 
     def get_date(self, obj):
         return date.today()
+
+    def get_today_possible(self, obj):
+        monthly_plan = MonthlyPlan.objects.get(owner=obj.owner)
+        total_spent_this_month = 0
+
+        payments_this_month = Payment.objects.filter(
+            owner=obj.owner,
+            pay_date__month=obj.date.month,
+            pay_date__year=obj.date.year,
+        )
+        
+        for payment in payments_this_month:
+            total_spent_this_month += payment.pay_price
+
+        today_possible = monthly_plan.monthly_possible - total_spent_this_month
+        today_possible = max(today_possible, 0)
+        return today_possible
