@@ -37,17 +37,22 @@ class NewPaymentView(APIView):
     def post(self, request):
         serializer = PaymentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(owner=request.user)
+            pay_date = serializer.validated_data.get("pay_date")
+            if not pay_date:
+                serializer.validated_data["pay_date"] = timezone.localtime().date()
+
+            payment = serializer.save(owner=request.user)
+            
             return Response(
                 {
-                    "payment_pk": serializer.data["pk"],
-                    "owner": serializer.data["owner"],
+                    "payment_pk": payment.pk,
+                    "owner": payment.owner.name,
                     "message": "지출 내역이 저장되었습니다.",
-                    "지출 유형": serializer.data["pay_type"],
-                    "지출 제목": serializer.data["pay_title"],
-                    "지출 내용": serializer.data["pay_content"],
-                    "지출 금액": serializer.data["pay_price"],
-                    "지출 날짜": serializer.data["pay_date"],
+                    "지출 유형": payment.pay_type,
+                    "지출 제목": payment.pay_title,
+                    "지출 내용": payment.pay_content,
+                    "지출 금액": payment.pay_price,
+                    "지출 날짜": payment.pay_date,
                 },
                 status=status.HTTP_201_CREATED,
             )
