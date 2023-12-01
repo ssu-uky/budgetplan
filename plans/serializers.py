@@ -13,7 +13,7 @@ class MonthlyPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonthlyPlan
         fields = (
-            "pk",
+            # "pk",
             "owner",
             "monthly_income",
             "monthly_saving",
@@ -26,9 +26,27 @@ class MonthlyPlanSerializer(serializers.ModelSerializer):
         return obj.monthly_income - obj.monthly_saving
 
     def validate(self, data):
-        if data["monthly_income"] < data["monthly_saving"]:
-            raise ValidationError("월 저축금액은 월 수입보다 클 수 없습니다.")
+        monthly_income = data.get("monthly_income")
+        monthly_saving = data.get("monthly_saving")
+
+        if monthly_income is not None and monthly_saving is not None:
+            if monthly_income < monthly_saving:
+                raise ValidationError("저축 금액이 수입 금액보다 많습니다.")
         return data
+
+    def save(self):
+        updated_income = "monthly_income" in self.validated_data
+        updated_saving = "monthly_saving" in self.validated_data
+
+        if updated_income or updated_saving:
+            monthly_income = self.validated_data.get(
+                "monthly_income", self.instance.monthly_income
+            )
+            monthly_saving = self.validated_data.get(
+                "monthly_saving", self.instance.monthly_saving
+            )
+            self.validated_data["monthly_possible"] = monthly_income - monthly_saving
+        return super().save()
 
 
 class TodayPlanSerializer(serializers.ModelSerializer):
@@ -39,7 +57,7 @@ class TodayPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = TodayPlan
         fields = (
-            "pk",
+            # "pk",
             "owner",
             "date",
             "today_spending",
