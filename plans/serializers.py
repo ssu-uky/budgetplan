@@ -6,7 +6,7 @@ from datetime import date
 from .models import MonthlyPlan, TodayPlan
 
 from payments.models import Payment
-# from payments.serializers import PaymentSerializer
+from payments.serializers import PaymentSerializer
 
 class MonthlyPlanSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.name")
@@ -19,7 +19,7 @@ class MonthlyPlanSerializer(serializers.ModelSerializer):
             "owner",
             "monthly_income",
             "monthly_saving",
-            "monthly_spending",
+            # "monthly_spending",
             "monthly_total_spending",
             "monthly_possible",
         )
