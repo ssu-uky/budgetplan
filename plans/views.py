@@ -106,11 +106,13 @@ class MonthlyPlanDetailView(APIView):
         data["monthly_total_spending"] = month_total_spending
 
         current_monthly_possible = (
-            monthly_plan.monthly_income - monthly_plan.monthly_saving - month_total_spending
+            monthly_plan.monthly_income
+            - monthly_plan.monthly_saving
+            - month_total_spending
         )
-        
+
         # current_monthly_possible = max(current_monthly_possible, 0)  # 음수가 되지 않도록 합니다.
-        current_monthly_possible = round(current_monthly_possible /100 ) * 100
+        current_monthly_possible = round(current_monthly_possible / 100) * 100
         data["monthly_possible"] = current_monthly_possible
 
         return Response(data, status=status.HTTP_200_OK)
