@@ -60,7 +60,7 @@ class TodayPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = TodayPlan
         fields = (
-            # "pk",
+            "pk",
             "owner",
             "date",
             "today_spending",

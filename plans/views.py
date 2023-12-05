@@ -2,6 +2,7 @@ import calendar
 from django.db.models import Sum
 
 from django.utils import timezone
+from datetime import datetime
 from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
@@ -149,6 +150,122 @@ class MonthlyPlanDetailView(APIView):
 
 
 class TodayPlanView(APIView):
+    """
+    GET : 오늘 사용 내역 및 사용 가능 금액 조회
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, owner, year, month, day):
+        user = get_object_or_404(User, username=owner)
+
+        if user != request.user:
+            raise PermissionDenied("접근 권한이 없습니다.")
+
+        try:
+            url_date = datetime(year, month, day).date()
+        except ValueError:
+            return Response(
+                {"message": "해당 일을 조회할 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 지정된 날짜의 지출 내역 구하기
+        payments = Payment.objects.filter(owner=user, pay_date=url_date)
+        total_pay_price = sum(payment.pay_price for payment in payments)
+
+        # 이번 달 예산 조회
+        monthly_plan = MonthlyPlan.objects.filter(owner=user).first()
+        if not monthly_plan:
+            return Response(
+                {"message": "이번 달 예산 계획이 설정되지 않았습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
+        else:
+            monthly_possible = monthly_plan.monthly_possible
+
+        # 해당 월의 총 일수와 현재 날짜 구하기
+        _, last_day = calendar.monthrange(url_date.year, url_date.month)
+        remaining_days = last_day - url_date.day + 1
+
+        present_payments = (
+            Payment.objects.filter(
+                owner=user,
+                pay_date__year=url_date.year,
+                pay_date__month=url_date.month,
+                pay_date__lte=url_date,
+            ).aggregate(Sum("pay_price"))["pay_price__sum"]
+            or 0
+        )
+
+        # 남은 일수에 따른 하루 사용 가능 금액 계산
+        today_possible = (monthly_possible - present_payments) / remaining_days
+        today_possible = round(today_possible / 100) * 100
+
+        possible_present = monthly_possible - present_payments
+
+        if possible_present >= 0:
+            today_possible = possible_present / remaining_days
+        else:
+            today_possible = 0
+
+        today_possible = round(today_possible / 100) * 100
+
+        today_present = today_possible - total_pay_price
+
+        return Response(
+            {
+                "today_date (날짜)": url_date,
+                "monthly_possible (이번 달 사용 가능 한 금액)": monthly_possible,
+                "present_payments (이번 달 현재까지의 사용금액)": present_payments,
+                "possible_present (이번 달 사용 가능 한 금액)": possible_present,
+                "today_possible (오늘 사용 가능 한 금액)": today_possible,
+                "today_present (오늘 사용 가능 한 남은 금액)": today_present,
+                "today_total_spending (오늘 총 지출 금액)": total_pay_price,
+                "today_payments (사용 내역)": PaymentSerializer(payments, many=True).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+# class TodayPlanDateView(APIView):
+#     """
+#     (url에 날짜 입력 후 조회)
+#     GET : 오늘 사용 내역 조회
+#     """
+
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def get_object(self, owner, year, month, day):
+#         user = get_object_or_404(User, username=owner)
+#         return get_object_or_404(
+#             Payment,
+#             owner=user,
+#             pay_date__year=year,
+#             pay_date__month=month,
+#             pay_date__day=day,
+#         )
+
+#     def get(self, request, owner, year=None, month=None, day=None):
+#         if request.user.username != owner:
+#             raise PermissionDenied
+#         try:
+#             user = get_object_or_404(User, username=owner)
+#             today_plan = TodayPlan.objects.get(owner=request.user)
+#             monthly_plan = MonthlyPlan.objects.get(owner=request.user)
+
+#             if year and month and day:
+#                 try:
+#                     date = timezone.datetime(year, month, day).date()
+#                 except ValueError:
+#                     return Response(
+#                         {"message": "해당 일을 조회할 수 없습니다."},
+#                         status=status.HTTP_400_BAD_REQUEST,
+#                     )
+#             else:
+#                 today_date = timezone.localtime().date()
+
+
+class TodayView(APIView):
     """
     GET : 오늘 사용 내역 조회
     """
