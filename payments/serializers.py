@@ -34,3 +34,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         if value > date.today():
             raise ValidationError("지출 날짜는 오늘 날짜보다 미래일 수 없습니다.")
         return value
+
+
+class MonthlyPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ("pay_title", "pay_price")

@@ -80,7 +80,7 @@ class TodayPlan(models.Model):
     )
 
     date = models.DateField(
-        default=timezone.localtime().date(),
+        default=timezone.localtime
     )
     
     def __str__(self):
