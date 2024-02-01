@@ -9,7 +9,7 @@ class MonthlyPlanAdmin(admin.ModelAdmin):
         "owner",
         "monthly_income",
         "monthly_saving",
-        "monthly_total_spgit ending",
+        "monthly_total_spending",
         "monthly_possible",
     )
     list_display_links = ("pk", "owner")
